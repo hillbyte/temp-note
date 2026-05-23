@@ -113,7 +113,8 @@ export function useNoteStore() {
 }
 
 // API helpers
-const API = '/api';
+// Use PUBLIC_API_URL if set (e.g. for PaaS deployment), otherwise default to local '/api'
+const API = import.meta.env.PUBLIC_API_URL || '/api';
 
 export async function publishNote(title: string, content: string, password: string, expireIn: string) {
   const res = await fetch(`${API}/notes`, {
