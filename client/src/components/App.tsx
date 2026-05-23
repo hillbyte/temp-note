@@ -11,7 +11,8 @@ import MarkdownToolbar from './MarkdownToolbar';
 
 export default function App() {
   const store = useNoteStore();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(isMobile);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   
@@ -208,6 +209,7 @@ export default function App() {
         onNew={store.createNote}
         onDelete={store.deleteNote}
         collapsed={sidebarCollapsed}
+        onCollapse={() => setSidebarCollapsed(true)}
       />
       
       <main className="main">

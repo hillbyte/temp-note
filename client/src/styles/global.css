@@ -767,3 +767,198 @@ body {
   border-radius: 20px;
   z-index: 1;
 }
+
+/* Sidebar close button - hidden on desktop */
+.sidebar-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+  color: var(--text-muted);
+  border-radius: 4px;
+}
+.sidebar-close-btn:hover { background: var(--bg-secondary); color: var(--text); }
+
+/* Sidebar backdrop - hidden on desktop */
+.sidebar-backdrop { display: none; }
+
+/* ========================================
+   MOBILE RESPONSIVE (≤768px)
+   ======================================== */
+@media (max-width: 768px) {
+  /* Sidebar becomes a fixed overlay */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1100;
+    height: 100vh;
+    width: 280px;
+    min-width: 280px;
+    transform: translateX(0);
+    transition: transform 0.25s ease;
+    box-shadow: 6px 0 24px rgba(0,0,0,0.15);
+  }
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+    margin-left: 0;
+  }
+  
+  /* Backdrop overlay */
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 1050;
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  /* Show close button on mobile */
+  .sidebar-close-btn { display: block; }
+
+  /* Main area fills the whole screen */
+  .main { width: 100vw; }
+
+  /* Toolbar: wrap and compact */
+  .toolbar {
+    padding: 4px 8px;
+    gap: 2px;
+  }
+  .toolbar-sep { display: none; }
+  .toolbar .btn-sm {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+  .toolbar .btn-icon {
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+
+  /* Tab bar */
+  .tabbar { min-height: 40px; }
+  .tab {
+    padding: 0 10px;
+    font-size: 11px;
+    max-width: 140px;
+  }
+  .tab-new { padding: 0 10px; font-size: 16px; }
+
+  /* Markdown toolbar: compact */
+  .md-toolbar {
+    padding: 3px 8px;
+    gap: 1px;
+    min-height: 30px;
+  }
+  .md-toolbar-btn {
+    padding: 2px 4px;
+    font-size: 11px;
+  }
+  .md-toolbar-hint { display: none; }
+  .md-toolbar-sep { margin: 0 3px; height: 14px; }
+
+  /* Editor padding */
+  .editor-pane .cm-editor .cm-content {
+    padding: 14px 12px;
+    font-size: 14px;
+  }
+  .editor-pane .cm-editor .cm-line {
+    line-height: 1.6;
+  }
+
+  /* Preview pane: disable split-view on mobile */
+  .preview-pane {
+    padding: 14px 12px;
+  }
+
+  /* Status bar */
+  .statusbar {
+    padding: 0 10px;
+    height: 28px;
+    font-size: 10px;
+  }
+  .statusbar-group { gap: 8px; }
+  .statusbar-badge { font-size: 9px; padding: 1px 6px; }
+
+  /* Modals: full width on mobile */
+  .modal {
+    min-width: unset;
+    max-width: unset;
+    width: calc(100vw - 32px);
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .modal h3 { font-size: 16px; }
+
+  /* Markdown Help drawer */
+  .md-help {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 24px 20px;
+  }
+  .empty-state h2 { font-size: 20px; }
+  .empty-state p { font-size: 13px; }
+  .empty-state .shortcuts {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  /* Toast */
+  .toast {
+    left: 16px;
+    right: 16px;
+    bottom: 36px;
+    text-align: center;
+  }
+
+  /* Share card */
+  .share-card {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
+
+  /* Unlock page */
+  .unlock-card {
+    width: calc(100vw - 40px);
+    max-width: 380px;
+    padding: 24px;
+  }
+}
+
+/* ========================================
+   SMALL MOBILE (≤480px)
+   ======================================== */
+@media (max-width: 480px) {
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .toolbar .btn-sm {
+    padding: 3px 5px;
+    font-size: 9px;
+  }
+
+  .tab {
+    max-width: 110px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+
+  .editor-pane .cm-editor .cm-content {
+    padding: 12px 8px;
+  }
+}
