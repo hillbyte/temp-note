@@ -6,6 +6,8 @@ export interface DraftNote {
   content: string;
   createdAt: string;
   updatedAt: string;
+  publishedId?: string;
+  adminToken?: string;
 }
 
 const STORAGE_KEY = 'tempnote_drafts';
@@ -66,7 +68,7 @@ export function useNoteStore() {
     return note;
   }, []);
 
-  const updateNote = useCallback((id: string, updates: Partial<Pick<DraftNote, 'title' | 'content'>>) => {
+  const updateNote = useCallback((id: string, updates: Partial<DraftNote>) => {
     setDrafts(prev => prev.map(n =>
       n.id === id ? { ...n, ...updates, updatedAt: new Date().toISOString() } : n
     ));
@@ -135,6 +137,27 @@ export async function unlockSharedNote(id: string, password: string) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password }),
+  });
+  return res.json();
+}
+export async function updatePublishedNote(id: string, title: string, content: string, adminToken: string) {
+  const res = await fetch(`${API}/notes/${id}`, {
+    method: 'PUT',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Admin-Token': adminToken
+    },
+    body: JSON.stringify({ title, content }),
+  });
+  return res.json();
+}
+
+export async function deletePublishedNote(id: string, adminToken: string) {
+  const res = await fetch(`${API}/notes/${id}`, {
+    method: 'DELETE',
+    headers: { 
+      'Admin-Token': adminToken
+    },
   });
   return res.json();
 }

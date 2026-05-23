@@ -7,6 +7,9 @@ interface ToolbarProps {
   onDownloadPdf: () => void;
   onHelp: () => void;
   previewOpen: boolean;
+  isPublished: boolean;
+  onUpdatePublished: () => void;
+  onUnpublish: () => void;
 }
 
 export default function Toolbar({ 
@@ -17,7 +20,10 @@ export default function Toolbar({
   onDownloadTxt, 
   onDownloadPdf,
   onHelp,
-  previewOpen 
+  previewOpen,
+  isPublished,
+  onUpdatePublished,
+  onUnpublish
 }: ToolbarProps) {
   return (
     <div className="toolbar">
@@ -38,9 +44,23 @@ export default function Toolbar({
       <div className="toolbar-sep"></div>
       
       <div className="toolbar-group">
-        <button className="btn btn-sm btn-pink" onClick={onShare}>
-          🚀 Publish / Share
-        </button>
+        {!isPublished ? (
+          <button className="btn btn-sm btn-pink" onClick={onShare}>
+            🚀 Publish
+          </button>
+        ) : (
+          <>
+            <button className="btn btn-sm btn-lavender" onClick={onShare}>
+              🔗 Share Link
+            </button>
+            <button className="btn btn-sm btn-pink" onClick={onUpdatePublished}>
+              🔄 Update
+            </button>
+            <button className="btn btn-sm btn-ghost" style={{color: 'var(--red)'}} onClick={onUnpublish}>
+              🗑️ Unpublish
+            </button>
+          </>
+        )}
       </div>
 
       <div style={{ flex: 1 }}></div>

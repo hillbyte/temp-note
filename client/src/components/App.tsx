@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import jsPDF from 'jspdf';
-import { useNoteStore, publishNote } from '../lib/store';
+import { useNoteStore, publishNote, updatePublishedNote, deletePublishedNote } from '../lib/store';
 import Editor from './Editor';
 import type { EditorHandle } from './Editor';
 import Preview from './Preview';
@@ -93,13 +93,49 @@ export default function App() {
       const res = await publishNote(activeNote.title, activeNote.content, publishPassword, publishExpiry);
       if (res.success) {
         const baseUrl = import.meta.env.PUBLIC_BASE_URL || window.location.origin;
-        const link = `${baseUrl.replace(/\/$/, '')}/share/${res.data.id}`;
+        const pubId = res.data.note.id;
+        const token = res.data.admin_token;
+        const link = `${baseUrl.replace(/\/$/, '')}/share/${pubId}`;
         setShareLink(link);
+        
+        // Save to draft so we can update/delete later
+        store.updateNote(activeNote.id, { publishedId: pubId, adminToken: token });
       } else {
         showToast(res.error || 'Failed to publish');
       }
     } catch (err) {
       showToast('Error publishing note');
+    }
+  };
+
+  const handleUpdatePublished = async () => {
+    if (!activeNote || !activeNote.publishedId || !activeNote.adminToken) return;
+    try {
+      const res = await updatePublishedNote(activeNote.publishedId, activeNote.title, activeNote.content, activeNote.adminToken);
+      if (res.success) {
+        showToast('Published note updated!');
+      } else {
+        showToast(res.error || 'Failed to update');
+      }
+    } catch (err) {
+      showToast('Error updating note');
+    }
+  };
+
+  const handleUnpublish = async () => {
+    if (!activeNote || !activeNote.publishedId || !activeNote.adminToken) return;
+    if (!confirm('Are you sure you want to unpublish this note? It will be deleted from the server.')) return;
+    
+    try {
+      const res = await deletePublishedNote(activeNote.publishedId, activeNote.adminToken);
+      if (res.success) {
+        store.updateNote(activeNote.id, { publishedId: undefined, adminToken: undefined });
+        showToast('Note unpublished successfully');
+      } else {
+        showToast(res.error || 'Failed to unpublish');
+      }
+    } catch (err) {
+      showToast('Error unpublishing note');
     }
   };
 
@@ -204,7 +240,12 @@ export default function App() {
               onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
               onTogglePreview={() => setPreviewOpen(!previewOpen)}
               onShare={() => {
-                setShareLink('');
+                if (activeNote.publishedId) {
+                  const baseUrl = import.meta.env.PUBLIC_BASE_URL || window.location.origin;
+                  setShareLink(`${baseUrl.replace(/\/$/, '')}/share/${activeNote.publishedId}`);
+                } else {
+                  setShareLink('');
+                }
                 setPublishPassword('');
                 setPublishExpiry('1h');
                 setPublishModalOpen(true);
@@ -214,6 +255,9 @@ export default function App() {
               onDownloadPdf={downloadPDF}
               onHelp={() => setHelpOpen(true)}
               previewOpen={previewOpen}
+              isPublished={!!activeNote.publishedId}
+              onUpdatePublished={handleUpdatePublished}
+              onUnpublish={handleUnpublish}
             />
             
             <MarkdownToolbar editorView={editorRef.current?.getView() ?? null} />
