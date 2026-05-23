@@ -83,8 +83,61 @@ export default function App() {
   const downloadPDF = () => {
     if (!activeNote) return;
     const doc = new jsPDF();
-    const splitText = doc.splitTextToSize(activeNote.content, 180);
-    doc.text(splitText, 15, 15);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const marginLeft = 15;
+    const marginRight = 15;
+    const marginTop = 20;
+    const marginBottom = 20;
+    const usableWidth = pageWidth - marginLeft - marginRight;
+    const lineHeight = 7;
+    let y = marginTop;
+
+    // Title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    const titleLines = doc.splitTextToSize(activeNote.title || 'Untitled', usableWidth);
+    for (const line of titleLines) {
+      doc.text(line, marginLeft, y);
+      y += 9;
+    }
+    y += 4;
+
+    // Separator line
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.5);
+    doc.line(marginLeft, y, pageWidth - marginRight, y);
+    y += 10;
+
+    // Body content
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    const lines = doc.splitTextToSize(activeNote.content, usableWidth);
+
+    for (const line of lines) {
+      if (y + lineHeight > pageHeight - marginBottom) {
+        doc.addPage();
+        y = marginTop;
+      }
+      doc.text(line, marginLeft, y);
+      y += lineHeight;
+    }
+
+    // Add page numbers
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(9);
+      doc.setTextColor(150);
+      doc.text(
+        `${i} / ${totalPages}`,
+        pageWidth / 2,
+        pageHeight - 10,
+        { align: 'center' }
+      );
+      doc.setTextColor(0);
+    }
+
     doc.save(`${activeNote.title || 'note'}.pdf`);
   };
 
