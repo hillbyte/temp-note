@@ -1,5 +1,5 @@
 # server/Dockerfile
-FROM golang:1.22-alpine AS builder
+FROM golang:alpine AS builder
 
 # Enable CGO for sqlite3
 ENV CGO_ENABLED=1
