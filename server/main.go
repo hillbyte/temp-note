@@ -77,6 +77,7 @@ func initDB() {
 		title TEXT NOT NULL DEFAULT 'Untitled',
 		content TEXT NOT NULL DEFAULT '',
 		password_hash TEXT,
+		admin_token TEXT,
 		expires_at DATETIME,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -90,6 +91,9 @@ func initDB() {
 	if err != nil {
 		log.Fatal("Failed to create schema:", err)
 	}
+
+	// Try adding the admin_token column in case of existing db
+	_, _ = db.Exec("ALTER TABLE notes ADD COLUMN admin_token TEXT")
 
 	// Start cleanup goroutine
 	go cleanupExpiredNotes()
@@ -214,9 +218,11 @@ func createNote(w http.ResponseWriter, r *http.Request) {
 		title = "Untitled"
 	}
 
+	adminToken := generateID() + generateID()
+
 	_, err := db.Exec(
-		"INSERT INTO notes (id, title, content, password_hash, expires_at) VALUES (?, ?, ?, ?, ?)",
-		id, title, req.Content, passwordHash, expiresAtStr,
+		"INSERT INTO notes (id, title, content, password_hash, admin_token, expires_at) VALUES (?, ?, ?, ?, ?, ?)",
+		id, title, req.Content, passwordHash, adminToken, expiresAtStr,
 	)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, APIResponse{Error: "Failed to create note"})
@@ -233,7 +239,11 @@ func createNote(w http.ResponseWriter, r *http.Request) {
 		note.ExpiresAt = expiresAtStr
 	}
 
-	writeJSON(w, http.StatusCreated, APIResponse{Success: true, Data: note})
+	// Attach admin token so frontend can store it
+	writeJSON(w, http.StatusCreated, APIResponse{Success: true, Data: map[string]interface{}{
+		"note": note,
+		"admin_token": adminToken,
+	}})
 }
 
 // GET /api/notes/{id}
@@ -366,11 +376,17 @@ func updateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if note exists
-	var exists bool
-	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM notes WHERE id = ?)", id).Scan(&exists)
-	if err != nil || !exists {
+	// Check if note exists and verify admin token
+	token := r.Header.Get("Admin-Token")
+	var existingToken sql.NullString
+	err := db.QueryRow("SELECT admin_token FROM notes WHERE id = ?", id).Scan(&existingToken)
+	if err != nil {
 		writeJSON(w, http.StatusNotFound, APIResponse{Error: "Note not found"})
+		return
+	}
+
+	if !existingToken.Valid || existingToken.String != token {
+		writeJSON(w, http.StatusUnauthorized, APIResponse{Error: "Unauthorized"})
 		return
 	}
 
@@ -394,6 +410,19 @@ func updateNote(w http.ResponseWriter, r *http.Request) {
 // DELETE /api/notes/{id}
 func deleteNote(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/api/notes/")
+
+	token := r.Header.Get("Admin-Token")
+	var existingToken sql.NullString
+	err := db.QueryRow("SELECT admin_token FROM notes WHERE id = ?", id).Scan(&existingToken)
+	if err != nil {
+		writeJSON(w, http.StatusNotFound, APIResponse{Error: "Note not found"})
+		return
+	}
+
+	if !existingToken.Valid || existingToken.String != token {
+		writeJSON(w, http.StatusUnauthorized, APIResponse{Error: "Unauthorized"})
+		return
+	}
 
 	result, err := db.Exec("DELETE FROM notes WHERE id = ?", id)
 	if err != nil {
