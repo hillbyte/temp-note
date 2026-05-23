@@ -1,0 +1,7 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SharedNote from '../../components/SharedNote';
+---
+<Layout>
+  <SharedNote client:only="react" noteId={Astro.params.id as string} />
+</Layout>

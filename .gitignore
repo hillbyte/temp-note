@@ -1,0 +1,34 @@
+# --- Client (Astro / Node) ---
+client/node_modules/
+client/dist/
+client/.astro/
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/.pnpm-debug.log*
+
+# --- Server (Go / SQLite) ---
+# Ignore compiled binaries
+server/tempnote-server
+server/tempnote-server.exe
+# Ignore sqlite databases
+server/tempnote.db
+server/tempnote.db-shm
+server/tempnote.db-wal
+server/data/
+
+# --- Environment Variables & Logs ---
+.env
+.env.*
+!.env.example
+*.log
+
+# --- OS / IDE Files ---
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Docker ---
+docker-compose.override.yml
