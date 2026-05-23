@@ -10,7 +10,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -o tempnote-server .
+RUN go build -o tempnote-server ./cmd/api
 
 # Production stage
 FROM alpine:3.19
