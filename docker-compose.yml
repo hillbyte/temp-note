@@ -5,6 +5,8 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      args:
+        - PUBLIC_API_URL
     restart: unless-stopped
     environment:
       - HOST=0.0.0.0

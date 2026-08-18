@@ -11,6 +11,10 @@ RUN npm install
 
 # Copy source code and build
 COPY . .
+
+ARG PUBLIC_API_URL
+ENV PUBLIC_API_URL=$PUBLIC_API_URL
+
 RUN npm run build
 
 # Production stage
